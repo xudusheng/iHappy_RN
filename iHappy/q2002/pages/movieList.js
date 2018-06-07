@@ -18,7 +18,7 @@ class MovieList extends Component {
 
 
     componentDidMount(){
-        this.props.actions.fetchMovieList(1, 1);
+        this.props.actions.fetchMovieList("http://www.q2002.com/type/1", 1);
     }
 }
 

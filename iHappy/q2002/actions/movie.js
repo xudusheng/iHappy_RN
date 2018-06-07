@@ -4,43 +4,38 @@
 import movieList from "../pages/movieList";
 
 var DomParser = require('react-native-html-parser').DOMParser;
-import * as TYPES from './types';
+import * as STATUS from './netStatus';
 import * as GlobleConst from '../pages/p.const';
 
-export function fetchMovieList(typeId = 0, page = 1) {
-    var fetchurl = GlobleConst.FetchURL;
-    if (typeId > 0) {
+var currentPage = 0;
+export function fetchMovieList(fetchurl = GlobleConst.FetchURL, page = currentPage) {
+    if (fetchurl.length) {
         // http://www.q2002.com/type/1/2.html
-        fetchurl = fetchurl + 'type/' + typeId + '/' + page + '.html';
+        fetchurl = fetchurl + '/' + page + '.html';
     }
-    return htmlRequest(fetchurl, typeId, page);
+    console.log(fetchurl);
+    return htmlRequest(fetchurl, page);
 }
 
 export function searchMovieList(key, page = 1) {//搜索  这里规定typeId = -1
     // http://www.q2002.com/search?wd=风花雪月;
     var fetchurl = GlobleConst.FetchURL;
-    let searchTypeId = GlobleConst.SearchTypeId;
     // fetchurl += ('search?wd=' + key);
 
     // http://www.q2002.com/s/%E8%8B%B1%E9%9B%84/2.html
     fetchurl += ('/s/' + key + '/' + page + '.html');
-    return htmlRequest(fetchurl, searchTypeId, page);//
+    return htmlRequest(fetchurl, page);//
 }
 
-export function clearSearchResult() {//清空搜索结果
-    return ((dispatch) => {
-        dispatch({'type': TYPES.CLEAR_SEARCH_RESULT});
-    });
-}
 
 
 //TODO:网络请求
-let htmlRequest = (fetchurl, typeId, page) => {
+let htmlRequest = (fetchurl, page) => {
     let isLoadMore = (page > 1);
     let isRefreshing = !isLoadMore;
 
     return ((dispatch) => {
-        dispatch({'type': TYPES.FETCH_DOING, isLoadMore: isLoadMore, isRefreshing: isRefreshing});
+        dispatch({'type': STATUS.FETCH_DOING, isLoadMore: isLoadMore, isRefreshing: isRefreshing});
 
         fetch(fetchurl, {
             // method: 'GET'
@@ -50,20 +45,21 @@ let htmlRequest = (fetchurl, typeId, page) => {
                 return response.text();
             })
             .then((data) => {
-                let result = dealXMLString(typeId, data);
-                dispatch({'type': TYPES.FETCH_DONE, typeId: typeId, movieList: result, isLoadMore: isLoadMore});
+                currentPage = page;
+                let result = dealXMLString(data);
+                dispatch({'type': STATUS.FETCH_DONE, movieList: result, isLoadMore: isLoadMore});
 
             })
             .catch((error) => {
                 //登陆失败
                 alert(error.message);
-                dispatch({'type': TYPES.FETCH_ERROE, error: error});
+                dispatch({'type': STATUS.FETCH_ERROE, error: error});
             });
     });
 };
 
 //TODO:XML解析
-let dealXMLString = (typeId, data)=> {
+let dealXMLString = (data)=> {
     let rooturl = GlobleConst.FetchURL;
 
     data = data.replace(/&raquo;/g, '');

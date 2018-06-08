@@ -6,6 +6,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import Home from '../pages/home';
+import MovieInfo from '../pages/movieInfo'
 import * as movieCreators from '../actions/movie';
 
 import App from '../../App';
@@ -14,13 +15,15 @@ import {StackNavigator,TabNavigator,TabBarBottom} from 'react-navigation';
 
 const APPNavigator = StackNavigator(
     {
-        Home: { screen: Home },
+        MovieList: { screen: Home },
+        MovieInfo:{ screen: MovieInfo }
     },
     {
         navigationOptions: {
             title:"首页",
             headerBackTitle: null,
             headerTintColor: '#333333',
+            gesturesEnabled: true,
         },
     },
 );

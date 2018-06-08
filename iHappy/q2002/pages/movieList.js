@@ -57,8 +57,18 @@ export default class MovieList extends Component {
                         dataSource={this.dataSource.cloneWithRows(movie.movieList)}
                         renderRow={this.renderRow.bind(this)}
                         initialListSize={10}
+                        // renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
                         contentContainerStyle={movieListStyles.listViewContentContainerStyle}
                         onEndReached={() => this.fetchNextPageMovies()}
+                        onEndReachedThreshold={10}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={movie.isLoading}
+                                onRefresh={() => this.fetchFirstMovieList()}
+                                title="Loading..."
+                                colors={['#ffaa66cc', '#ff00ddff', '#ffffbb33', '#ffff4444']}
+                            />
+                        }
                     />;
                 </View>
             );
@@ -75,7 +85,7 @@ export default class MovieList extends Component {
             >
                 <Image source={{uri: rowData.imageurl}} style={movieListStyles.imageStyle}/>
                 <View style={movieListStyles.textViewStyle}>
-                    <Text style={movieListStyles.titleStyle} numberOfLines={2}>{rowData.title}</Text>
+                    <Text style={movieListStyles.titleStyle} numberOfLines={1}>{rowData.title}</Text>
                 </View>
             </TouchableOpacity>;
         return view;
@@ -89,13 +99,17 @@ export default class MovieList extends Component {
         this.fetchMovieList(this.props.movieRef);
     }
 
+
     fetchNextPageMovies() {
         let currentPage = this.state.movie.currentPage;
         this.fetchMovieList(this.props.movieRef, currentPage + 1);
     }
 
-    pressCell() {
+    pressCell(rowData) {
         // this.fetchNextPageMovies();
+        console.log(rowData);
+        const { navigate } = this.props.navigation;
+        navigate("MovieInfo", {movieInfo:rowData});
     }
 
 
@@ -137,11 +151,13 @@ export default class MovieList extends Component {
             // console.log(response.text());
             return response.text();
         }).then((data) => {
+
             var result = dealXMLString(data);
             movie.currentPage = page;
             movie.isLoading = false;
             movie.netStatus = STATUS.FETCH_DONE;
-            movie.movieList = result.concat(this.state.movie.movieList);
+
+            movie.movieList = this.state.movie.movieList.concat(result);
 
             this.setState({
                 movie: movie,
@@ -165,8 +181,9 @@ export default class MovieList extends Component {
 
 
 let col = 3;//列数
-let margin_gap = 15;//间距
+let margin_gap = 5;//间距
 import Dimensions from 'Dimensions';
+import MovieInfo from "./movieInfo";
 
 let screenWidth = Dimensions.get('window').width;
 let cellWidth = (screenWidth - margin_gap * (col + 1)) / col;
@@ -181,19 +198,27 @@ const movieListStyles = StyleSheet.create({
     listViewStyle: {
         flex: 1,
     },
+    listViewContentContainerStyle: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+
+    listViewStyle: {
+        flex: 1,
+    },
     cellContentViewStyle: {
         justifyContent: 'center',
         alignItems: 'center',
         width: cellWidth,
         height: cellHeight,
-        marginTop: 10,
+        marginTop: 5,
         marginLeft: margin_gap,
     },
 
     imageStyle: {
         width: cellWidth,
         height: cellHeight,
-
+        backgroundColor:"#eeeeee"
     },
     textViewStyle: {
         justifyContent: 'center',
@@ -206,6 +231,7 @@ const movieListStyles = StyleSheet.create({
     titleStyle: {
         flex: 1,
         color: 'white',
+        textAlign:'center',
     },
 });
 

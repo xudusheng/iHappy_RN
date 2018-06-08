@@ -7,13 +7,14 @@ var DomParser = require('react-native-html-parser').DOMParser;
 import * as STATUS from './netStatus';
 import * as GlobleConst from '../pages/p.const';
 
-var currentPage = 0;
+var currentPage = 1;
 export function fetchMovieList(fetchurl = GlobleConst.FetchURL, page = currentPage) {
     if (fetchurl.length) {
         // http://www.q2002.com/type/1/2.html
         fetchurl = fetchurl + '/' + page + '.html';
     }
     console.log(fetchurl);
+    console.log(currentPage+"-----------");
     return htmlRequest(fetchurl, page);
 }
 
@@ -47,7 +48,9 @@ let htmlRequest = (fetchurl, page) => {
             .then((data) => {
                 currentPage = page;
                 let result = dealXMLString(data);
-                dispatch({'type': STATUS.FETCH_DONE, movieList: result, isLoadMore: isLoadMore});
+                console.log("000000000000000");
+                console.log(result);
+                dispatch({'type': STATUS.FETCH_DONE, movieList: result, isLoadMore: isLoadMore, currentPage:currentPage});
 
             })
             .catch((error) => {

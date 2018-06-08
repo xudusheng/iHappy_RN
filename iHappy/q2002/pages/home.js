@@ -73,9 +73,12 @@ export default class Home extends Component<Props> {
                     tabBarActiveTextColor="#3e9ce9"
                     tabBarInactiveTextColor="#aaaaaa"
                 >
-                    <MovieList style={{backgroundColor:"red", flex:1}}  tabLabel="电影" ref="http://www.baidu.com"> </MovieList>
-                    <MovieList style={{backgroundColor:"green", flex:1}} tabLabel="电视剧"> </MovieList>
-                    <MovieList style={{backgroundColor:"blue", flex:1}} tabLabel={"音乐"}> </MovieList>
+                    <MovieList style={{backgroundColor:"red", flex:1}}  tabLabel="电影" movieRef="http://www.q2002.com/type/1"> </MovieList>
+                    <MovieList style={{backgroundColor:"green", flex:1}} tabLabel="电视剧" movieRef="http://www.q2002.com/type/2"> </MovieList>
+                    <MovieList style={{backgroundColor:"blue", flex:1}} tabLabel={"动漫"} movieRef="http://www.q2002.com/type/7"> </MovieList>
+                    <MovieList style={{backgroundColor:"blue", flex:1}} tabLabel={"综艺"} movieRef="http://www.q2002.com/type/4"> </MovieList>
+                    <MovieList style={{backgroundColor:"blue", flex:1}} tabLabel={"音乐"} movieRef="http://www.q2002.com/type/6"> </MovieList>
+                    <MovieList style={{backgroundColor:"blue", flex:1}} tabLabel={"福利"} movieRef="http://www.q2002.com/type/3"> </MovieList>
 
                 </ScrollableTabView>
 

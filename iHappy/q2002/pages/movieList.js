@@ -8,12 +8,12 @@ import * as GlobleConst from './p.const';
 import {
     StyleSheet,
     View,
-    ListView,
     TouchableOpacity,
     RecyclerViewBackedScrollView,
     RefreshControl,
     Image,
     Text,
+    ListView,
 } from 'react-native';
 import fetchMovieList from "../actions/movie"
 
@@ -21,13 +21,13 @@ export default class MovieList extends Component {
 
     static propTypes = {
         movieRef: PropTypes.string,
+        type: PropTypes.number,
     };
 
     constructor() {
         super();
         // 初始化数据源(rowHasChanged是优化的一种手段，只有当r1 !== r2的时候才会重新渲染)
         this.dataSource = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
-
 
         this.isLoading = false;
         let movie = {
@@ -43,12 +43,36 @@ export default class MovieList extends Component {
     }
 
     render() {
-        console.log('*****************' + this.props.movieRef);
-        console.log(this.props.movie);
+        console.log('=------------' + this.props.movieRef);
 
         let movie = this.state.movie;
+
+
+        console.log('*****************' + this.props.movieRef);
+        console.log("\\\\\\\\\\" + movie.isLoading);
+
         if (movie.movieList.length < 1) {
-            return (<View style={movieListStyles.container}/>);
+            switch (movie.netStatus) {
+                case STATUS.FETCH_DONE: {
+                    //正在加载
+                    return (
+                        <View style={movieListStyles.container}>
+                            <Text> 暂无数据 </Text>
+                        </View>);
+                }
+                case STATUS.FETCH_ERROE: {
+                    //请求异常
+                    return (
+                        <View style={movieListStyles.container}>
+                            <Text> 网络异常，稍后刷新重试 </Text>
+                        </View>);
+                }
+                default: {
+                    return (
+                        <View style={movieListStyles.container}>
+                        </View>);
+                }
+            }
         } else {
             return (
                 <View style={movieListStyles.container}>
@@ -57,7 +81,6 @@ export default class MovieList extends Component {
                         dataSource={this.dataSource.cloneWithRows(movie.movieList)}
                         renderRow={this.renderRow.bind(this)}
                         initialListSize={10}
-                        // renderScrollComponent={props => <RecyclerViewBackedScrollView {...props} />}
                         contentContainerStyle={movieListStyles.listViewContentContainerStyle}
                         onEndReached={() => this.fetchNextPageMovies()}
                         onEndReachedThreshold={10}
@@ -76,16 +99,16 @@ export default class MovieList extends Component {
 
     }
 
-    //TODO:ListViewCell
+//TODO:ListViewCell
     renderRow(rowData, sectionID, rowID, highlightRow) {
         let view =
             <TouchableOpacity
                 onPress={() => this.pressCell(rowData)}
                 style={movieListStyles.cellContentViewStyle}
             >
-                <Image source={{uri: rowData.imageurl}} style={movieListStyles.imageStyle}/>
+                <Image source={{uri: rowData.image_src}} style={movieListStyles.imageStyle}/>
                 <View style={movieListStyles.textViewStyle}>
-                    <Text style={movieListStyles.titleStyle} numberOfLines={1}>{rowData.title}</Text>
+                    <Text style={movieListStyles.titleStyle} numberOfLines={1}>{rowData.name}</Text>
                 </View>
             </TouchableOpacity>;
         return view;
@@ -96,46 +119,34 @@ export default class MovieList extends Component {
     }
 
     fetchFirstMovieList() {
-        this.fetchMovieList(this.props.movieRef);
+        let fetchurl = this.props.movieRef + '?type=' + this.props.type + '&page=' + 1;
+        this.fetchlocalserverdata(fetchurl, 1);
     }
 
 
     fetchNextPageMovies() {
         let currentPage = this.state.movie.currentPage;
-        this.fetchMovieList(this.props.movieRef, currentPage + 1);
+        let nextPage = currentPage + 1;
+        let fetchurl = this.props.movieRef + '?type=' + this.props.type + '&page=' + nextPage;
+        this.fetchlocalserverdata(fetchurl, nextPage);
     }
 
     pressCell(rowData) {
         // this.fetchNextPageMovies();
         console.log(rowData);
-        const { navigate } = this.props.navigation;
-        navigate("MovieInfo", {movieInfo:rowData});
+        console.log(this.props);
+        const {navigate} = this.props.navigation;
+        navigate("MovieInfo", {movieInfo: rowData});
     }
 
-
-    fetchMovieList(fetchurl = GlobleConst.FetchURL, page = 1) {
-        if (fetchurl.length) {
-            // http://www.q2002.com/type/1/2.html
-            fetchurl = fetchurl + '/' + page + '.html';
-        }
-        console.log(fetchurl);
-        console.log(this.state.movie.currentPage + "-----------");
-        this.htmlRequest(fetchurl, page);
-    }
 
     searchMovieList(key, page = 1) {//搜索
-        // http://www.q2002.com/search?wd=风花雪月;
-        var fetchurl = GlobleConst.FetchURL;
-        // fetchurl += ('search?wd=' + key);
-
-        // http://www.q2002.com/s/%E8%8B%B1%E9%9B%84/2.html
-        fetchurl += ('/s/' + key + '/' + page + '.html');
-        this.htmlRequest(fetchurl, page);//
+        let fetchurl = this.props.movieRef + '?keyword=' + key;
+        this.fetchlocalserverdata(fetchurl);//
     }
 
-
-//TODO:网络请求
-    htmlRequest(fetchurl, page) {
+    //TODO:网络请求
+    fetchlocalserverdata(fetchurl, page = 1) {
         let isLoadMore = (page > 1);
         let isRefreshing = !isLoadMore;
 
@@ -143,21 +154,22 @@ export default class MovieList extends Component {
 
         movie.isLoading = true;
         movie.netStatus = STATUS.FETCH_DOING;
-
+        this.setState({
+            movie: movie,
+        });
         fetch(fetchurl, {
             // method: 'GET'
 
         }).then((response) => {
-            // console.log(response.text());
+
             return response.text();
         }).then((data) => {
-
-            var result = dealXMLString(data);
             movie.currentPage = page;
             movie.isLoading = false;
             movie.netStatus = STATUS.FETCH_DONE;
 
-            movie.movieList = this.state.movie.movieList.concat(result);
+            $result = JSON.parse(data);
+            movie.movieList = this.state.movie.movieList.concat($result.result);
 
             this.setState({
                 movie: movie,
@@ -169,7 +181,7 @@ export default class MovieList extends Component {
 
             movie.isLoading = false;
             movie.netStatus = STATUS.FETCH_DONE;
-            if (movie.movieList.length < 1){
+            if (movie.movieList.length < 1) {
                 movie.netStatus = STATUS.FETCH_ERROE;
             }
             this.setState({
@@ -197,10 +209,12 @@ const movieListStyles = StyleSheet.create({
     },
     listViewStyle: {
         flex: 1,
+        backgroundColor: 'red',
     },
     listViewContentContainerStyle: {
         flexDirection: 'row',
         flexWrap: 'wrap',
+        backgroundColor: "#eeeeee",
     },
 
     listViewStyle: {
@@ -218,7 +232,7 @@ const movieListStyles = StyleSheet.create({
     imageStyle: {
         width: cellWidth,
         height: cellHeight,
-        backgroundColor:"#eeeeee"
+        backgroundColor: "#eeeeee"
     },
     textViewStyle: {
         justifyContent: 'center',
@@ -231,68 +245,6 @@ const movieListStyles = StyleSheet.create({
     titleStyle: {
         flex: 1,
         color: 'white',
-        textAlign:'center',
+        textAlign: 'center',
     },
 });
-
-
-//TODO:-------------------------------------------------------------------------------------------------
-
-//TODO:XML解析
-let dealXMLString = (data) => {
-    let rooturl = GlobleConst.FetchURL;
-
-    data = data.replace(/&raquo;/g, '');
-    data = data.replace(/<\/footer><\/div>/g, '<\/footer>');
-    data = data.replace(/<\/div><\/ul>/g, '<\/div>');
-    console.log('开始解析');
-    let doc = new DomParser().parseFromString(data, 'text/html');
-    console.log('解析完成');
-
-    //定义一下变量
-    var movieList = [];
-    let movie_sections = doc.querySelect('div[class="row"]');
-
-    for (var section = 0; section < movie_sections.length; section++) {
-        let sectionIndex = section;
-        let sectionNode = movie_sections[sectionIndex];
-
-        let movie_rows_test = sectionNode.getElementsByClassName('movie-item');
-
-
-        if (movie_rows_test.length < 1) {
-            continue;
-        }
-
-        let movie_rows = sectionNode.getElementsByClassName('movie-item');
-
-        console.log(movie_rows);
-        for (var row = 0; row < movie_rows.length; row++) {
-            let rowIndex = row;
-            let rowElement = movie_rows[rowIndex];
-
-            let aNode = rowElement.querySelect('a[href]')[0];
-            let imageNode = aNode.querySelect('img')[0];
-            let buttonNode = aNode.querySelect('button[class="hdtag"]')[0];
-            let updateNode = rowElement.querySelect('span')[0];
-
-            let title = aNode.getAttribute('title');
-            let href = rooturl + aNode.getAttribute('href');
-            let imageurl = imageNode.getAttribute('src');
-            let updateDate = updateNode.firstChild.nodeValue;
-            let markTitle = buttonNode.firstChild.nodeValue;
-
-            let oneItemInfo = {
-                title: title,
-                href: href,
-                imageurl: imageurl,
-                updateDate: updateDate,
-                markTitle: markTitle
-            };
-            movieList.push(oneItemInfo);
-        }
-    }
-
-    console.log(movieList);
-    return movieList;
-};

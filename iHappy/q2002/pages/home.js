@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
     StyleSheet,
     Text,
@@ -17,42 +17,43 @@ import ScrollableTabView, {DefaultTabBar} from 'react-native-scrollable-tab-view
 let DomParser = require('react-native-html-parser').DOMParser;
 
 // import MovieList from "./movieList"
+import App from '../../App';
 
 type Props = {};
 export default class Home extends Component<Props> {
 
     constructor() {
         super();
-
+        $rootURL = 'http://localhost/iHappy/query';
         this.typeList = [
             {
                 typeName: '电影',
-                typeHref: 'http://www.q2002.com/type/1.html',
+                typeHref: '1',
             },
 
             {
                 typeName: '电视剧',
-                typeHref: 'http://www.q2002.com/type/2.html',
+                typeHref: '2',
             },
 
             {
                 typeName: '动漫',
-                typeHref: 'http://www.q2002.com/type/7.html',
+                typeHref: '7',
             },
 
             {
                 typeName: '音乐',
-                typeHref: 'http://www.q2002.com/type/6.html',
+                typeHref: '6',
             },
 
             {
                 typeName: '综艺',
-                typeHref: 'http://www.q2002.com/type/4.html',
+                typeHref: '4',
             },
 
             {
                 typeName: '福利',
-                typeHref: 'http://www.q2002.com/type/3.html',
+                typeHref: '13',
             },
         ];
     }
@@ -73,21 +74,26 @@ export default class Home extends Component<Props> {
                     tabBarActiveTextColor="#3e9ce9"
                     tabBarInactiveTextColor="#aaaaaa"
                 >
-                    <MovieList {...this.props} style={{backgroundColor:"red", flex:1}}  tabLabel="电影" movieRef="http://www.q2002.com/type/1"> </MovieList>
-                    <MovieList {...this.props} style={{backgroundColor:"green", flex:1}} tabLabel="电视剧" movieRef="http://www.q2002.com/type/2"> </MovieList>
-                    <MovieList {...this.props} style={{backgroundColor:"blue", flex:1}} tabLabel={"动漫"} movieRef="http://www.q2002.com/type/7"> </MovieList>
-                    <MovieList {...this.props} style={{backgroundColor:"blue", flex:1}} tabLabel={"综艺"} movieRef="http://www.q2002.com/type/4"> </MovieList>
-                    <MovieList {...this.props} style={{backgroundColor:"blue", flex:1}} tabLabel={"音乐"} movieRef="http://www.q2002.com/type/6"> </MovieList>
-                    <MovieList {...this.props} style={{backgroundColor:"blue", flex:1}} tabLabel={"福利"} movieRef="http://www.q2002.com/type/3"> </MovieList>
+                    <MovieList {...this.props} style={{backgroundColor: "red", flex: 1}} tabLabel="电影"
+                               movieRef="http://localhost/iHappy/query" type={1}> </MovieList>
+                    <MovieList {...this.props} style={{backgroundColor: "green", flex: 1}} tabLabel="电视剧"
+                               movieRef="http://localhost/iHappy/query" type={2}> </MovieList>
+                    <MovieList {...this.props} style={{backgroundColor: "blue", flex: 1}} tabLabel={"动漫"}
+                               movieRef="http://localhost/iHappy/query" type={7}> </MovieList>
+                    <MovieList {...this.props} style={{backgroundColor: "blue", flex: 1}} tabLabel={"综艺"}
+                               movieRef="http://localhost/iHappy/query" type={4}> </MovieList>
+                    <MovieList {...this.props} style={{backgroundColor: "blue", flex: 1}} tabLabel={"音乐"}
+                               movieRef="http://localhost/iHappy/query" type={6}> </MovieList>
+                    <MovieList {...this.props} style={{backgroundColor: "blue", flex: 1}} tabLabel={"福利"}
+                               movieRef="http://localhost/iHappy/query" type={13}> </MovieList>
 
                 </ScrollableTabView>
-
             </View>
         );
     }
 
 
-    homeViews(){
+    homeViews() {
 
     }
 }
@@ -96,13 +102,14 @@ let col = 3;//列数
 let margin_gap = 15;//间距
 import Dimensions from 'Dimensions';
 import MovieList from "./movieList";
+
 let screenWidth = Dimensions.get('window').width;
 let cellWidth = (screenWidth - margin_gap * (col + 1)) / col;
 let cellHeight = cellWidth / 0.6;
 const HomeStyles = StyleSheet.create({
     containerStyle: {
         flex: 1,
-        backgroundColor:"#F5FCFF"
+        backgroundColor: "#F5FCFF"
     },
     listViewStyle: {
         flex: 1,
@@ -118,7 +125,7 @@ const HomeStyles = StyleSheet.create({
     },
     sectionHeaderTitleStyle: {
         marginLeft: margin_gap,
-        width:screenWidth,
+        width: screenWidth,
         color: 'red',
     },
     cellContentViewStyle: {
@@ -155,7 +162,7 @@ const HomeStyles = StyleSheet.create({
 
     tabStyle: {
         paddingBottom: 0,
-        height:30
+        height: 30
     },
     textStyle: {
         fontSize: 16
